@@ -22,3 +22,5 @@ A Python file that was mainly used to practice pandas and sklearn. The code prep
 Pokemon_Functions
 ---
   This was a file I used to practice functions and classes when starting up classes again in August 2022. As of January 10th, 2023, I am working on adding better comments to the file as I did not comment much at all while creating it. The functions in this file perform various things with pokemon stats and information, pulling from multiple dataframes. For the most part, the functions deal with calculating and visualizing the pokemon stats.
+  
+Data pulled from: https://github.com/PokeAPI/pokeapi/tree/master/data/v2/csv
