@@ -2,10 +2,9 @@
 """
 Created on Wed Aug 24 16:02:55 2022
 
-@author: cacru
+
 """
 
-'''Kaggle Titanic Code'''
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
