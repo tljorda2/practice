@@ -27,3 +27,4 @@ Future Additions:
 - Cross-Fold Validation to compare Accuracies for all of the models.
 - Expand on the function with better error handling and more model types
 - Having it iterate through the matchups for March Madness to predict the outcome.
+- Renaming some of the feature names to make them more interpretable.
