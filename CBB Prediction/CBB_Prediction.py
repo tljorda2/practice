@@ -447,14 +447,14 @@ ax = sns.barplot(x=Original_Accuracy, y=Names)
 plt.xlabel(f'Accuracy Score')
 plt.xlim(0.70,0.82)
 plt.ylabel('Models')
-plt.title(f'Original Dataset Accruacy Scores\nAverage: {round(fmean(Original_Accuracy), 4)}')
+plt.title(f'Original Dataset Accruacy Scores\nAverage: {round(fmean(Original_Accuracy), 4)}\nAxis Condensed')
 plt.show()
 
 ax = sns.barplot(x=SMOTE_Accuracy, y=Names)
 plt.xlabel(f'Accuracy Score')
 plt.xlim(0.70,0.82)
 plt.ylabel('Models')
-plt.title(f'SMOTE Dataset Accruacy Scores\nAverage: {round(fmean(SMOTE_Accuracy), 4)}')
+plt.title(f'SMOTE Dataset Accruacy Scores\nAverage: {round(fmean(SMOTE_Accuracy), 4)}\nAxis Condensed')
 plt.show()
 # %%
 def CBB_Prediction(home_team, away_team, model_type='log'):
