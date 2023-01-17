@@ -110,7 +110,7 @@ Names = ['Classification Tree', 'Neural Network', 'K-Nearest Neighbors', 'Logist
          'Random Forest', 'Naive Bayes']
 Original_Accuracy = [DecisionTree_CF_Accuracy, NeuralNet_CF_Accuracy, KNN_CF_Accuracy,
                      LogRegression_CF_Accuracy, RandomForest_CF_Accuracy, NaiveBayes_CF_Accuracy]
-# This compares the accuracy scores for all the models ran between using SMOTE and using the original dataset
+# This compares the accuracy scores for all the models ran using cross fold validation. The axis is condensed from 0.7 to 0.85
 ax = sns.barplot(x=Original_Accuracy, y=Names)
 plt.xlabel(f'Accuracy Score')
 plt.xlim(0.70,0.82)
