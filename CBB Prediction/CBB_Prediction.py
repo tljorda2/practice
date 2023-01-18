@@ -6,6 +6,9 @@ import re
 import matplotlib.pyplot as plt
 import seaborn as sns
 from CBB_DataPrep import *
+import xgboost as xge
+# Library for optimizing models
+from hyperopt import STATUS_OK, Trials, fmin, hp, tpe
 # %%
 # Splitting the data into X and y. Dropped any of the features we are not interested in.
 X = Model_DataFrame.drop(columns=['Schl', 'Opp', 'School_x', 'Home_Win', 'School_y'],axis=1)
@@ -196,6 +199,67 @@ RandomForest_Accuracy = metrics.accuracy_score(y_test, y_pred)
 
 
 #%%
+'''XGBoost Model'''
+from sklearn.metrics import mean_squared_error
+# XGBoost can use three inputs that are all dictionaries
+# reg:squarederror for linear regression
+# reg:logistic for logistic regression
+# binary:logistic for logistyic regression with probabilities
+# verbosity has parameters of 0, 1, 2, 3. 0 is nothing, 1 is warning, 2 is info
+# eta is a parameter for its learning rate
+xgbr = xge.XGBClassifier(objective='binary:logistic', verbosity=0, eta=0.1119, max_depth=4, min_child_weight=6,
+                        reg_alpha=41,reg_lambda=0.0824, colsample_bytree=.8035, gamma=2.757)
+xgbr.fit(X_train, y_train)
+y_pred = xgbr.predict(X_test)
+print('ORIGINAL DATA\n----------------')
+predictions = [round(value) for value in y_pred]
+accuracy = metrics.accuracy_score(y_test, predictions)
+print(accuracy)
+
+#%%
+# Attempting to optimize the model
+
+space={'max_depth': hp.quniform("max_depth", 3, 18, 1),
+        'gamma': hp.uniform ('gamma', 1,9),
+        'reg_alpha' : hp.quniform('reg_alpha', 40,180,1),
+        'reg_lambda' : hp.uniform('reg_lambda', 0,1),
+        'colsample_bytree' : hp.uniform('colsample_bytree', 0.5,1),
+        'min_child_weight' : hp.quniform('min_child_weight', 0, 10, 1),
+        'eta': hp.uniform('eta',0,1),
+        'n_estimators': 180,
+        'seed': 0
+    }
+
+def objective(space):
+    clf=xge.XGBClassifier(objective='binary:logistic',
+                    n_estimators =space['n_estimators'], max_depth = int(space['max_depth']), gamma = space['gamma'],
+                    reg_alpha = int(space['reg_alpha']),min_child_weight=int(space['min_child_weight']), eta=int(space['eta']),
+                    colsample_bytree=int(space['colsample_bytree']),use_label_encoder=False)
+    
+    evaluation = [( X_train, y_train), ( X_test, y_test)]
+    
+    clf.fit(X_train, y_train,
+            eval_set=evaluation, eval_metric="auc",
+            early_stopping_rounds=10,verbose=False)
+    
+
+    pred = clf.predict(X_test)
+    accuracy = metrics.accuracy_score(y_test, pred>0.5)
+    print ("SCORE:", accuracy)
+    return {'loss': -accuracy, 'status': STATUS_OK }
+
+trials = Trials()
+
+best_hyperparams = fmin(fn = objective,
+                        space = space,
+                        algo = tpe.suggest,
+                        max_evals = 100,
+                        trials = trials)
+#%%
+# Best Hyperparameters for XGBoost
+print(best_hyperparams)
+
+#%%
 'ALL REBALANCED DATA MOVED HERE'
 # All SMOTE rebalanced data was moved to this cell
 # If this is ran before using the prediciton function, the function will use the rebalanced data
@@ -344,19 +408,19 @@ Names = ['Logistic Regression', 'Classification Tree', 'Gradient Boost', 'Neural
 # This compares the accuracy scores for all the models ran between using SMOTE and using the original dataset
 ax = sns.barplot(x=Original_Accuracy, y=Names)
 plt.xlabel(f'Accuracy Score')
-plt.xlim(0.70,0.82)
+plt.xlim(0.65,0.82)
 plt.ylabel('Models')
 plt.title(f'Original Dataset Accruacy Scores\nAverage: {round(fmean(Original_Accuracy), 4)}\nAxis Condensed')
 plt.show()
 
 ax = sns.barplot(x=SMOTE_Accuracy, y=Names)
 plt.xlabel(f'Accuracy Score')
-plt.xlim(0.70,0.82)
+plt.xlim(0.65,0.82)
 plt.ylabel('Models')
 plt.title(f'SMOTE Dataset Accruacy Scores\nAverage: {round(fmean(SMOTE_Accuracy), 4)}\nAxis Condensed')
 plt.show()
 # %%
-def CBB_Prediction(home_team, away_team, model_type='log'):
+def CBB_Prediction(home_team, away_team, model_type='xgbr'):
     # setting the model type to lowercase in order for it to be uniform
     # for now, the home and away team inputs need to be entered in their proper casing
     # Some schools are all caps like UCLA while others are proper case like Arizona State
@@ -395,8 +459,11 @@ def CBB_Prediction(home_team, away_team, model_type='log'):
     elif model_type == 'nn':
         y_pred = nn.predict(X_test)
         prob = nn.predict_proba(X_test)
+    elif model_type == 'xgbr':
+        y_pred = xgbr.predict(X_test)
+        prob = xgbr.predict_proba(X_test)
     else:
-        raise ValueError('Please enter a valid model type. The valid models are:\nsvm\nlog\ndtc\ngbe\nnn')
+        raise ValueError('Please enter a valid model type. The valid models are:\nsvm\nlog\ndtc\ngbe\nnn\nxgbr')
     
     #Checking if the home team won in order to give the proper probability of the outcome
     if y_pred[0] == 1:
@@ -413,7 +480,7 @@ def CBB_Prediction(home_team, away_team, model_type='log'):
         print(f'Estimated Probability of a win: {prob}%')
 
 #%%
-CBB_Prediction('Missouri', 'Arkansas')
+CBB_Prediction('Kansas', 'UCLA', 'xgbr')
 # %%
 team_stats['School']
 # %%
